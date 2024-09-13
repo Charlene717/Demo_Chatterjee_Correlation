@@ -3,7 +3,7 @@ rm(list = ls()) # Clean variable ##* Comment out if Run All
 memory.limit(150000)
 
 
-# 檢查並安裝所需的套件
+#### Load Packages ####
 if(!require('ggplot2')) {install.packages('ggplot2'); library(ggplot2)}
 if(!require('GGally')) {install.packages('GGally'); library(GGally)}
 if(!require('XICOR')) {install.packages('XICOR'); library(XICOR)} # Chatterjee Correlation
