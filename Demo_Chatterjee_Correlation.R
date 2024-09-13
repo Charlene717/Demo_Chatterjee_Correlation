@@ -10,33 +10,33 @@ if(!require('XICOR')) {install.packages('XICOR'); library(XICOR)} # Chatterjee C
 if(!require('gridExtra')) {install.packages('gridExtra'); library(gridExtra)}
 
 
-# 生成模擬數據
-set.seed(123) # 保持結果可重複
+#### Generate simulated data ####
+set.seed(123) # Keep results reproducible
 x1 <- rnorm(100)
-y1 <- x1 + rnorm(100, sd=0.1) # 高度線性相關
+y1 <- x1 + rnorm(100, sd=0.1) # Highly linearly correlated
 
 x2 <- rnorm(100)
-y2 <- 0.5 * x2 + rnorm(100, sd=0.2) # 中等線性相關
+y2 <- 0.5 * x2 + rnorm(100, sd=0.2) # Moderately linearly correlated
 
 x3 <- rnorm(100)
-y3 <- rnorm(100) # 幾乎無相關
+y3 <- rnorm(100) # Almost no correlation
 
 x4 <- rnorm(100)
-y4 <- -0.5 *x4 + rnorm(100, sd=0.1) # 反向相關
+y4 <- -0.5 *x4 + rnorm(100, sd=0.1) # Inversely correlated
 
 x5 <- seq(-10, 10, length.out = 100)
-y5 <- x5^2 + rnorm(100, sd=10) # 二次曲線
+y5 <- x5^2 + rnorm(100, sd=10) # Moderate Quadratic relationship
 
 x6 <- seq(-10, 10, length.out = 100)
-y6 <- x6^2 + rnorm(100, sd=1) # 二次曲線
+y6 <- x6^2 + rnorm(100, sd=1) # Highly Quadratic relationship
 
 x7 <- seq(-10, 10, length.out = 200)
-y7 <- sin(x7) + rnorm(200, sd=0.3) # 正弦波
+y7 <- sin(x7) + rnorm(200, sd=0.3) # Moderate Sine wave relationship
 
 x8 <- seq(-10, 10, length.out = 200)
-y8 <- sin(x8) + rnorm(200, sd=0.1) # 正弦波
+y8 <- sin(x8) + rnorm(200, sd=0.1) # Highly Sine wave relationship
 
-# 將數據存入列表
+# Store the data in a list
 data_list <- list(
   list(x = x1, y = y1, title = "Highly Linear Positive"),
   list(x = x2, y = y2, title = "Moderate Linear Positive"),
@@ -48,7 +48,9 @@ data_list <- list(
   list(x = x8, y = y8, title = "Highly Sine Wave Relationship")
 )
 
-# 定義函數來計算並顯示 Pearson, Spearman 和 Chatterjee correlation
+
+#### Calculate correlations ####
+# Define a function to calculate and display Pearson, Spearman, and Chatterjee correlations
 calculate_correlations <- function(x, y) {
   pearson_corr <- cor(x, y, method = "pearson")
   spearman_corr <- cor(x, y, method = "spearman")
@@ -60,7 +62,7 @@ calculate_correlations <- function(x, y) {
 }
 
 
-# 計算並顯示結果
+# Calculate and display results
 for (data in data_list) {
   correlations <- calculate_correlations(data$x, data$y)
   cat("Dataset:", data$title, "\n")
@@ -69,7 +71,7 @@ for (data in data_list) {
   cat("Chatterjee Correlation: ", round(correlations[3], 2), "\n\n")
 }
 
-
+#### Visualization ####
 # Define the plotting function
 plot_data <- function(x, y, title, correlations) {
   pearson_corr <- round(correlations[1], 2)
@@ -85,13 +87,13 @@ plot_data <- function(x, y, title, correlations) {
     theme(plot.title = element_text(size = 11)) # Set title font size
 }
 
-# 繪製每個數據集的圖表並顯示相關性
+# Plot each dataset and show correlations
 plot_list <- list()
 for (data in data_list) {
   correlations <- calculate_correlations(data$x, data$y)
   plot_list[[data$title]] <- plot_data(data$x, data$y, data$title, correlations)
 }
 
-# 組合所有圖表
+# Combine all plots
 grid.arrange(grobs = plot_list, ncol = 4)
 
