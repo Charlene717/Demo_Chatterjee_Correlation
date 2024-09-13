@@ -16,19 +16,25 @@ x1 <- rnorm(100)
 y1 <- x1 + rnorm(100, sd=0.1) # 高度線性相關
 
 x2 <- rnorm(100)
-y2 <- 0.5 * x2 + rnorm(100, sd=0.5) # 中等線性相關
+y2 <- 0.5 * x2 + rnorm(100, sd=0.2) # 中等線性相關
 
 x3 <- rnorm(100)
 y3 <- rnorm(100) # 幾乎無相關
 
 x4 <- rnorm(100)
-y4 <- -x4 + rnorm(100, sd=0.1) # 反向相關
+y4 <- -0.5 *x4 + rnorm(100, sd=0.1) # 反向相關
 
 x5 <- seq(-10, 10, length.out = 100)
-y5 <- x5^2 + rnorm(100, sd=1) # 二次曲線
+y5 <- x5^2 + rnorm(100, sd=3) # 二次曲線
 
 x6 <- seq(-10, 10, length.out = 100)
-y6 <- sin(x6) + rnorm(100, sd=0.5) # 正弦波
+y6 <- x5^2 + rnorm(100, sd=1) # 二次曲線
+
+x7 <- seq(-10, 10, length.out = 100)
+y7 <- sin(x6) + rnorm(100, sd=0.5) # 正弦波
+
+x8 <- seq(-10, 10, length.out = 100)
+y8 <- sin(x6) + rnorm(100, sd=0.2) # 正弦波
 
 # 將數據存入列表
 data_list <- list(
@@ -36,8 +42,10 @@ data_list <- list(
   list(x = x2, y = y2, title = "Moderate Linear Positive"),
   list(x = x3, y = y3, title = "No Correlation"),
   list(x = x4, y = y4, title = "Highly Linear Negative"),
-  list(x = x5, y = y5, title = "Quadratic Relationship"),
-  list(x = x6, y = y6, title = "Sine Wave Relationship")
+  list(x = x5, y = y5, title = "Moderate Quadratic Relationship"),
+  list(x = x6, y = y6, title = "Highly Quadratic Relationship"),
+  list(x = x7, y = y7, title = "Moderate Sine Wave Relationship"),
+  list(x = x8, y = y8, title = "Highly Sine Wave Relationship")
 )
 
 # 定義函數來計算並顯示 Pearson, Spearman 和 Chatterjee correlation
@@ -62,7 +70,7 @@ for (data in data_list) {
 }
 
 
-# 定義繪圖函數
+# Define the plotting function
 plot_data <- function(x, y, title, correlations) {
   pearson_corr <- round(correlations[1], 2)
   spearman_corr <- round(correlations[2], 2)
@@ -73,7 +81,8 @@ plot_data <- function(x, y, title, correlations) {
     ggtitle(paste0(title, "\nPearson: ", pearson_corr,
                    " | Spearman: ", spearman_corr,
                    " | Chatterjee: ", chatterjee_corr)) +
-    theme_minimal()
+    theme_minimal() +
+    theme(plot.title = element_text(size = 11)) # Set title font size
 }
 
 # 繪製每個數據集的圖表並顯示相關性
@@ -84,4 +93,5 @@ for (data in data_list) {
 }
 
 # 組合所有圖表
-grid.arrange(grobs = plot_list, ncol = 3)
+grid.arrange(grobs = plot_list, ncol = 4)
+
