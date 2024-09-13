@@ -2,6 +2,8 @@
 if(!require('ggplot2')) {install.packages('ggplot2'); library(ggplot2)}
 if(!require('GGally')) {install.packages('GGally'); library(GGally)}
 if(!require('XICOR')) {install.packages('XICOR'); library(XICOR)} # Chatterjee Correlation
+if(!require('gridExtra')) {install.packages('gridExtra'); library(gridExtra)}
+
 
 # 生成模擬數據
 set.seed(123) # 保持結果可重複
@@ -44,6 +46,7 @@ calculate_correlations <- function(x, y) {
   return(c(pearson_corr, spearman_corr, chatterjee_corr))
 }
 
+
 # 計算並顯示結果
 for (data in data_list) {
   correlations <- calculate_correlations(data$x, data$y)
@@ -53,3 +56,27 @@ for (data in data_list) {
   cat("Chatterjee Correlation: ", round(correlations[3], 2), "\n\n")
 }
 
+
+# 定義繪圖函數
+plot_data <- function(x, y, title, correlations) {
+  pearson_corr <- round(correlations[1], 2)
+  spearman_corr <- round(correlations[2], 2)
+  chatterjee_corr <- round(correlations[3], 2)
+  
+  ggplot(data = data.frame(x = x, y = y), aes(x = x, y = y)) +
+    geom_point(color = 'blue', size = 2) +
+    ggtitle(paste0(title, "\nPearson: ", pearson_corr,
+                   " | Spearman: ", spearman_corr,
+                   " | Chatterjee: ", chatterjee_corr)) +
+    theme_minimal()
+}
+
+# 繪製每個數據集的圖表並顯示相關性
+plot_list <- list()
+for (data in data_list) {
+  correlations <- calculate_correlations(data$x, data$y)
+  plot_list[[data$title]] <- plot_data(data$x, data$y, data$title, correlations)
+}
+
+# 組合所有圖表
+grid.arrange(grobs = plot_list, ncol = 3)
