@@ -1,7 +1,7 @@
 # 檢查並安裝所需的套件
 if(!require('ggplot2')) {install.packages('ggplot2'); library(ggplot2)}
 if(!require('GGally')) {install.packages('GGally'); library(GGally)}
-if(!require('chatterjeeCorrelation')) {install.packages('chatterjeeCorrelation'); library(chatterjeeCorrelation)}
+if(!require('XICOR')) {install.packages('XICOR'); library(XICOR)} # Chatterjee Correlation
 
 # 生成模擬數據
 set.seed(123) # 保持結果可重複
