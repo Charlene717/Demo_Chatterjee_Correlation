@@ -84,7 +84,19 @@ plot_data <- function(x, y, title, correlations) {
                    " | Spearman: ", spearman_corr,
                    " | Chatterjee: ", chatterjee_corr)) +
     theme_minimal() +
-    theme(plot.title = element_text(size = 11)) # Set title font size
+    
+    # Set title, axis labels, and axis tick size
+    theme(
+      plot.title = element_text(size = 11),            # Title font size
+      axis.title.x = element_text(size = 14),          # X-axis title size
+      axis.title.y = element_text(size = 14),          # Y-axis title size
+      axis.text.x = element_text(size = 12),           # X-axis tick text size
+      axis.text.y = element_text(size = 12),           # Y-axis tick text size
+      
+      # Add a black border to the plot
+      panel.border = element_rect(color = "black", fill = NA, linewidth = 1)
+    ) +
+    labs(x = "X", y = "Y")  # Add labels for X and Y axes
 }
 
 # Plot each dataset and show correlations
