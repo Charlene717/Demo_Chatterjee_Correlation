@@ -25,16 +25,16 @@ x4 <- rnorm(100)
 y4 <- -0.5 *x4 + rnorm(100, sd=0.1) # 反向相關
 
 x5 <- seq(-10, 10, length.out = 100)
-y5 <- x5^2 + rnorm(100, sd=3) # 二次曲線
+y5 <- x5^2 + rnorm(100, sd=10) # 二次曲線
 
 x6 <- seq(-10, 10, length.out = 100)
-y6 <- x5^2 + rnorm(100, sd=1) # 二次曲線
+y6 <- x6^2 + rnorm(100, sd=1) # 二次曲線
 
-x7 <- seq(-10, 10, length.out = 100)
-y7 <- sin(x6) + rnorm(100, sd=0.5) # 正弦波
+x7 <- seq(-10, 10, length.out = 200)
+y7 <- sin(x7) + rnorm(200, sd=0.3) # 正弦波
 
-x8 <- seq(-10, 10, length.out = 100)
-y8 <- sin(x6) + rnorm(100, sd=0.2) # 正弦波
+x8 <- seq(-10, 10, length.out = 200)
+y8 <- sin(x8) + rnorm(200, sd=0.1) # 正弦波
 
 # 將數據存入列表
 data_list <- list(
