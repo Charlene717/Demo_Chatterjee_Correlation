@@ -37,7 +37,9 @@ data_list <- list(
 calculate_correlations <- function(x, y) {
   pearson_corr <- cor(x, y, method = "pearson")
   spearman_corr <- cor(x, y, method = "spearman")
-  chatterjee_corr <- chatterjeeCorrelation(x, y)
+
+  chatterjee_corr <- xicor(x, y)
+  # chatterjee_corr <- calculateXI(x, y)
   
   return(c(pearson_corr, spearman_corr, chatterjee_corr))
 }
@@ -50,3 +52,4 @@ for (data in data_list) {
   cat("Spearman Correlation: ", round(correlations[2], 2), "\n")
   cat("Chatterjee Correlation: ", round(correlations[3], 2), "\n\n")
 }
+
