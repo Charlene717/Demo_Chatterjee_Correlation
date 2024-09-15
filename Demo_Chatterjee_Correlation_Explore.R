@@ -55,7 +55,7 @@ data_list <- list(
   list(x = x4, y = y4, title = "Highly Linear Negative"),
   list(x = x5, y = y5, title = "11th-degree Highly Non-Linear Positive"),
   list(x = x6, y = y6, title = "7th-degree Highly Non-linear Positive"),
-  list(x = x7, y = y7, title = "7th-degree Moderate Non-linear Positiv"),
+  list(x = x7, y = y7, title = "7th-degree Moderate Non-linear Positive"),
   list(x = x8, y = y8, title = "7th-degree Highly Non-linear Negative"),
   list(x = x9, y = y9, title = "Moderate Quadratic Relationship"),
   list(x = x10, y = y10, title = "Highly Quadratic Relationship"),
