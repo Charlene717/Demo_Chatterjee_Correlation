@@ -1,7 +1,10 @@
-install.packages(c("entropy", "infotheo", "pracma"))
-library(entropy)
+# 安装必要的包
+install.packages(c("infotheo", "Rfast"))
+
+# 加载包
 library(infotheo)
-library(pracma)
+library(Rfast)
+
 
 
 # 改良的 Chatterjee 相关系数函数，结合互信息
@@ -31,7 +34,6 @@ modified_chatterjee_mi <- function(X, Y, alpha = 0.5, method = "knn", k = 10, nu
   xi <- chatterjee_corr(X, Y)
   
   # 步骤 2：计算互信息
-  # 方法一：使用离散化方法
   if(method == "discrete") {
     # 如果未指定 num_bins，使用 Sturges' 公式
     if(is.null(num_bins)) {
@@ -39,32 +41,23 @@ modified_chatterjee_mi <- function(X, Y, alpha = 0.5, method = "knn", k = 10, nu
     }
     
     # 离散化数据
-    X_discrete <- discretize(X, numBins = num_bins)
-    Y_discrete <- discretize(Y, numBins = num_bins)
-    
-    # 计算联合概率分布
-    joint_xy <- table(X_discrete, Y_discrete) / n
-    px <- rowSums(joint_xy)
-    py <- colSums(joint_xy)
+    X_discrete <- discretize(X, disc = "equalfreq", nbins = num_bins)
+    Y_discrete <- discretize(Y, disc = "equalfreq", nbins = num_bins)
     
     # 计算互信息
-    mi <- mi.plugin(joint_xy)
+    mi <- mutinformation(X_discrete, Y_discrete)
     
     # 计算熵
-    hx <- entropy.plugin(px)
-    hy <- entropy.plugin(py)
+    hx <- entropy(X_discrete)
+    hy <- entropy(Y_discrete)
   }
-  # 方法二：使用 k-NN 方法
   else if(method == "knn") {
-    # 将数据组合
-    data <- cbind(X, Y)
-    
-    # 使用 entropy 包的 kNN 方法
-    mi <- mi.empirical(data, k = k)
+    # 使用 Rfast 包的基于 k-NN 的方法
+    mi <- Rfast::mi.parallel(cbind(X, Y), k = k)
     
     # 计算熵
-    hx <- entropy.empirical(X, k = k)
-    hy <- entropy.empirical(Y, k = k)
+    hx <- Rfast::entropy(X, method = "knn", k = k)
+    hy <- Rfast::entropy(Y, method = "knn", k = k)
   }
   else {
     stop("未知的方法。请使用 'discrete' 或 'knn'")
@@ -93,12 +86,11 @@ modified_chatterjee_mi <- function(X, Y, alpha = 0.5, method = "knn", k = 10, nu
   ))
 }
 
-########################
 
-# 加载所需的包
-library(entropy)
+
+# 加载必要的包
 library(infotheo)
-library(pracma)
+library(Rfast)
 
 # 示例数据
 set.seed(123)
