@@ -22,7 +22,7 @@ y3 <- rnorm(100) # Almost no correlation
 x4 <- rnorm(100)
 y4 <- -0.5 *x4 + rnorm(100, sd=0.1) # Inversely correlated
 
-# 使用四次和五次多項式生成強烈的非線性數據
+
 x5 <- seq(0, 1, length.out = 100)
 y5 <- 10 * (x5^11) + rnorm(100, sd = 0.1) # 非線性正相關，O次多項式
 
@@ -53,7 +53,7 @@ data_list <- list(
   list(x = x2, y = y2, title = "Moderate Linear Positive"),
   list(x = x3, y = y3, title = "No Correlation"),
   list(x = x4, y = y4, title = "Highly Linear Negative"),
-  list(x = x5, y = y5, title = "11th-degree Highly Linear Negative"),
+  list(x = x5, y = y5, title = "11th-degree Highly Non-Linear Positive"),
   list(x = x6, y = y6, title = "7th-degree Highly Non-linear Positive"),
   list(x = x7, y = y7, title = "7th-degree Moderate Non-linear Positiv"),
   list(x = x8, y = y8, title = "7th-degree Highly Non-linear Negative"),
