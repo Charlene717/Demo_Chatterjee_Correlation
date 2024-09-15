@@ -24,16 +24,16 @@ y4 <- -0.5 *x4 + rnorm(100, sd=0.1) # Inversely correlated
 
 
 x5 <- seq(0, 1, length.out = 100)
-y5 <- 10 * (x5^11) + rnorm(100, sd = 0.1) # 非線性正相關，O次多項式
+y5 <- 10 * (x5^11) + rnorm(100, sd = 0.1) # 11th-degree Highly Non-Linear Positive
 
 x6 <- seq(0, 1, length.out = 100)
-y6 <- 10 * (x6^7) + rnorm(100, sd = 0.1) # 非線性正相關，O次多項式
+y6 <- 10 * (x6^7) + rnorm(100, sd = 0.1) # 7th-degree Highly Non-Linear Positive
 
 x7 <- seq(0, 1, length.out = 100)
-y7 <- 10 * (x7^7) + rnorm(100, sd = 1) # 非線性正相關，O次多項式
+y7 <- 10 * (x7^7) + rnorm(100, sd = 1) # 7th-degree Moderate Non-linear Positive
 
 x8 <- seq(0, 1, length.out = 100)
-y8 <- -10 * (x8^7) + rnorm(100, sd = 0.5)  # 非線性負相關，O次多項式
+y8 <- -10 * (x8^7) + rnorm(100, sd = 0.5)  # 7th-degree Highly Non-linear Negative
 
 x9 <- seq(-10, 10, length.out = 100)
 y9 <- x9^2 + rnorm(100, sd=10) # Moderate Quadratic relationship
