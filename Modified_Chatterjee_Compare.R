@@ -9,7 +9,7 @@ if(!require('XICOR')) {install.packages('XICOR'); library(XICOR)} # Chatterjee C
 if(!require('gridExtra')) {install.packages('gridExtra'); library(gridExtra)}
 
 #### Generate simulated data ####
-set.seed(717) # Keep results reproducible
+set.seed(123) # Keep results reproducible
 x1 <- rnorm(100)
 y1 <- x1 + rnorm(100, sd=0.1) # Highly linearly correlated
 
@@ -137,30 +137,73 @@ modified_chatterjee_D <- function(x, y) {
   return(xi_improved)
 }
 
+
+combined_correlation <- function(x, y, alpha = 0.5) {
+  n <- length(x)
+  if (length(y) != n) {
+    stop("x and y must have the same length.")
+  }
+  
+  # 计算原始的 Chatterjee 相关系数
+  chatterjee_corr <- function(x, y) {
+    n <- length(x)
+    rank_x <- rank(x, ties.method = "average")
+    rank_y <- rank(y, ties.method = "average")
+    order_x <- order(rank_x)
+    rank_y_ordered <- rank_y[order_x]
+    S <- sum(abs(diff(rank_y_ordered)))
+    xi_n <- 1 - (3 * S) / (n^2 - 1)
+    return(xi_n)
+  }
+  xi_chatterjee <- chatterjee_corr(x, y)
+  
+  # 计算距离相关系数
+  if(!require('energy')) {install.packages('energy'); library(energy)}
+  xi_dcor <- dcor(x, y)
+  
+  # 组合相关系数
+  xi_combined <- alpha * xi_chatterjee + (1 - alpha) * xi_dcor
+  
+  return(list(
+    xi_chatterjee = xi_chatterjee,
+    xi_dcor = xi_dcor,
+    xi_combined = xi_combined
+  ))
+}
+
+
 #### Calculate correlations ####
 # Define a function to calculate and display Pearson, Spearman, and Chatterjee correlations
 calculate_correlations <- function(x, y) {
-  
-  chatterjee_corr_A <- modified_chatterjee_A(x, y)
+
+  # chatterjee_corr_A <- modified_chatterjee_A(x, y)
   chatterjee_corr_D <- modified_chatterjee_D(x, y)
-  
+  chatterjee_corr_E <- combined_correlation(x, y)$xi_combined
   chatterjee_corr <- xicor(x, y)
   
-  return(c(chatterjee_corr_A, chatterjee_corr_D, chatterjee_corr))
+  pearson_corr <- cor(x, y, method = "pearson")
+  spearman_corr <- cor(x, y, method = "spearman")
+  
+  return(c(chatterjee_corr_D, chatterjee_corr_E, chatterjee_corr, pearson_corr, spearman_corr))
 }
 
 #### Visualization ####
 # Define the plotting function
 plot_data <- function(x, y, title, correlations) {
-  chatterjee_corr_A <- round(correlations[1], 2)
-  chatterjee_corr_D <- round(correlations[2], 2)
+
+  chatterjee_corr_D <- round(correlations[1], 2)
+  chatterjee_corr_E <- round(correlations[2], 2)
   chatterjee_corr <- round(correlations[3], 2)
+  pearson_corr <- round(correlations[4], 2)
+  spearman_corr <- round(correlations[5], 2)
   
   ggplot(data = data.frame(x = x, y = y), aes(x = x, y = y)) +
     geom_point(color = 'blue', size = 2) +
-    ggtitle(paste0(title, "\nChatterjee_A: ", chatterjee_corr_A,
-                   " | Chatterjee_D: ", chatterjee_corr_D,
-                   " | Chatterjee: ", chatterjee_corr)) +
+    ggtitle(paste0(title, "\nChatterjee_D: ", chatterjee_corr_D,
+                   " | Chatterjee_E: ", chatterjee_corr_E,
+                   " | Chatterjee: ", chatterjee_corr,
+                   "\nPearson: ", pearson_corr,
+                   " | Spearman: ", spearman_corr)) +
     theme_minimal() +
     
     # Set title, axis labels, and axis tick size
