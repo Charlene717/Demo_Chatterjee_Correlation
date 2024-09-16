@@ -1,10 +1,12 @@
 # 安装必要的包
-install.packages(c("infotheo", "Rfast"))
+# install.packages(c("infotheo", "Rfast"))
 
 # 加载包
 library(infotheo)
 library(Rfast)
 
+# install.packages("mpmi")
+library(mpmi)
 
 
 # 改良的 Chatterjee 相关系数函数，结合互信息
@@ -52,12 +54,13 @@ modified_chatterjee_mi <- function(X, Y, alpha = 0.5, method = "knn", k = 10, nu
     hy <- entropy(Y_discrete)
   }
   else if(method == "knn") {
-    # 使用 Rfast 包的基于 k-NN 的方法
-    mi <- Rfast::mi.parallel(cbind(X, Y), k = k)
+    # 使用 mpmi 包的基于 k-NN 的方法
+    # 计算互信息
+    mi <- mi_KSG(X, Y, k = k)
     
     # 计算熵
-    hx <- Rfast::entropy(X, method = "knn", k = k)
-    hy <- Rfast::entropy(Y, method = "knn", k = k)
+    hx <- entropy_KSG(X, k = k)
+    hy <- entropy_KSG(Y, k = k)
   }
   else {
     stop("未知的方法。请使用 'discrete' 或 'knn'")
@@ -88,9 +91,11 @@ modified_chatterjee_mi <- function(X, Y, alpha = 0.5, method = "knn", k = 10, nu
 
 
 
-# 加载必要的包
+# 安装并加载必要的包
+# install.packages("mpmi")
+# install.packages("infotheo")
+library(mpmi)
 library(infotheo)
-library(Rfast)
 
 # 示例数据
 set.seed(123)
@@ -107,4 +112,5 @@ print(result_knn)
 result_discrete <- modified_chatterjee_mi(X, Y, alpha = 0.5, method = "discrete", num_bins = 10)
 print("使用离散化方法的结果：")
 print(result_discrete)
+
 
