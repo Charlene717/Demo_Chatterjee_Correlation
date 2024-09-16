@@ -36,10 +36,11 @@ combined_correlation <- function(x, y, method = "spearman") {
     stop("Invalid method. Use 'pearson', 'spearman', or 'dcor'.")
   }
   
+  # 使用相對權重進行調整
+  total_corr <- xi_chatterjee + xi_corr
+  alpha_adjusted_chatterjee <- xi_chatterjee / total_corr
+  alpha_adjusted_corr <- xi_corr / total_corr
   
-  alpha_adjusted_chatterjee <- xi_chatterjee
-  alpha_adjusted_corr <- 1-alpha_adjusted_chatterjee
-
   # 組合相關系數
   xi_combined <- alpha_adjusted_chatterjee * xi_chatterjee + alpha_adjusted_corr * xi_corr
   
