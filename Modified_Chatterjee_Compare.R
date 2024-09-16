@@ -269,14 +269,148 @@ global_chatterjee <- function(x, y, gamma = NULL) {
 }
 
 
+improved_chatterjee <- function(x, y, gamma = NULL) {
+  n <- length(x)
+  if (length(y) != n) {
+    stop("x and y must have the same length.")
+  }
+  
+  # 计算秩
+  rank_x <- rank(x, ties.method = "average")
+  rank_y <- rank(y, ties.method = "average")
+  
+  # 计算距离
+  dist_x <- abs(x - mean(x))
+  
+  # 计算权重
+  if (is.null(gamma)) {
+    gamma <- 1 / median(abs(dist_x - median(dist_x)))
+  }
+  w <- exp(-gamma * dist_x)
+  
+  # 对权重进行归一化
+  w <- w / sum(w)
+  
+  # 计算加权平均值
+  mean_rx <- sum(w * rank_x)
+  mean_ry <- sum(w * rank_y)
+  
+  # 计算加权协方差和方差
+  cov_w <- sum(w * (rank_x - mean_rx) * (rank_y - mean_ry))
+  var_rx <- sum(w * (rank_x - mean_rx)^2)
+  var_ry <- sum(w * (rank_y - mean_ry)^2)
+  
+  # 计算改良的 Chatterjee 相关系数
+  xi_improved <- cov_w / sqrt(var_rx * var_ry)
+  
+  return(xi_improved)
+}
+
+distance_chatterjee <- function(x, y) {
+  n <- length(x)
+  if (length(y) != n) {
+    stop("x and y must have the same length.")
+  }
+  
+  # 计算距离矩阵
+  D_X <- as.matrix(dist(x))
+  D_Y <- as.matrix(dist(y))
+  
+  # 双中心化距离矩阵
+  J <- diag(n) - matrix(1, n, n) / n
+  A <- -0.5 * J %*% (D_X^2) %*% J
+  B <- -0.5 * J %*% (D_Y^2) %*% J
+  
+  # 计算迹
+  numerator <- sum(A * B)
+  denominator <- sqrt(sum(A * A) * sum(B * B))
+  
+  # 计算距离相关系数
+  xi_distance <- numerator / denominator
+  
+  return(xi_distance)
+}
+
+
+improved_chatterjee <- function(x, y) {
+  n <- length(x)
+  if (length(y) != n) {
+    stop("x and y must have the same length.")
+  }
+  
+  # 计算秩
+  rank_x <- rank(x, ties.method = "average")
+  rank_y <- rank(y, ties.method = "average")
+  
+  # 初始化 L_i
+  L <- numeric(n)
+  
+  for (i in 1:n) {
+    # 计算 Y_i 与其他 Y 的绝对差值
+    diff_y <- abs(y[i] - y[-i])
+    # 找到最近邻的索引
+    nn_index <- which.min(diff_y)
+    if (nn_index >= i) nn_index <- nn_index + 1  # 调整索引，因为 y[-i]
+    
+    # 计算 L_i
+    L[i] <- abs(rank_x[i] - rank_x[nn_index]) + 1
+  }
+  
+  # 计算改进的 Chatterjee 相关系数
+  xi_hat <- 1 - (sum(L - 1)) / (n * (n - 1) / 2)
+  
+  return(xi_hat)
+}
+
+
+improved_chatterjee <- function(x, y) {
+  n <- length(x)
+  if (length(y) != n) {
+    stop("x and y must have the same length.")
+  }
+  
+  # 计算秩
+  rank_x <- rank(x)
+  rank_y <- rank(y)
+  
+  # 计算秩的距离矩阵
+  A <- as.matrix(dist(rank_x, method = "euclidean"))
+  B <- as.matrix(dist(rank_y, method = "euclidean"))
+  
+  # 中心化距离矩阵
+  A_row_mean <- rowMeans(A)
+  A_col_mean <- colMeans(A)
+  A_mean <- mean(A)
+  A_centered <- A - outer(A_row_mean, rep(1, n)) - outer(rep(1, n), A_col_mean) + A_mean
+  
+  B_row_mean <- rowMeans(B)
+  B_col_mean <- colMeans(B)
+  B_mean <- mean(B)
+  B_centered <- B - outer(B_row_mean, rep(1, n)) - outer(rep(1, n), B_col_mean) + B_mean
+  
+  # 计算距离协方差和方差
+  dCov2 <- sum(A_centered * B_centered) / (n^2)
+  dVarX2 <- sum(A_centered^2) / (n^2)
+  dVarY2 <- sum(B_centered^2) / (n^2)
+  
+  # 计算改良的 Chatterjee 相关系数
+  xi_improved <- sqrt(dCov2) / sqrt(sqrt(dVarX2) * sqrt(dVarY2))
+  
+  return(xi_improved)
+}
 
 #### Calculate correlations ####
 # Define a function to calculate and display Pearson, Spearman, and Chatterjee correlations
 calculate_correlations <- function(x, y) {
   chatterjee_corr_A <- modified_chatterjee_A(x, y)
   # chatterjee_corr_B <- modified_chatterjee_B(x, y,method = "discrete")$xi_combined
+  
   # chatterjee_corr_B <- kernel_chatterjee(x, y, kernel = "gaussian")
-  chatterjee_corr_B <-  global_chatterjee(x, y)
+  # chatterjee_corr_B <-  global_chatterjee(x, y)
+  # chatterjee_corr_B <- improved_chatterjee(x, y)
+  # chatterjee_corr_B <- distance_chatterjee(x, y)
+  # chatterjee_corr_B <- improved_chatterjee(x, y)
+  chatterjee_corr_B <- improved_chatterjee(x, y)
   
   chatterjee_corr <- xicor(x, y)
   
