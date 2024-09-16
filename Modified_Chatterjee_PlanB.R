@@ -42,25 +42,25 @@ modified_chatterjee_mi <- function(X, Y, alpha = 0.5, method = "knn", k = 10, nu
       num_bins <- ceiling(1 + log2(n))
     }
     
-    # 离散化数据
-    X_discrete <- discretize(X, disc = "equalfreq", nbins = num_bins)
-    Y_discrete <- discretize(Y, disc = "equalfreq", nbins = num_bins)
+    # 离散化数据（指定包名）
+    X_discrete <- infotheo::discretize(X, disc = "equalfreq", nbins = num_bins)
+    Y_discrete <- infotheo::discretize(Y, disc = "equalfreq", nbins = num_bins)
     
     # 计算互信息
-    mi <- mutinformation(X_discrete, Y_discrete)
+    mi <- infotheo::mutinformation(X_discrete, Y_discrete)
     
     # 计算熵
-    hx <- entropy(X_discrete)
-    hy <- entropy(Y_discrete)
+    hx <- infotheo::entropy(X_discrete)
+    hy <- infotheo::entropy(Y_discrete)
   }
   else if(method == "knn") {
     # 使用 mpmi 包的基于 k-NN 的方法
     # 计算互信息
-    mi <- mi_KSG(X, Y, k = k)
+    mi <- knn_mi(X, Y, k = k)
     
     # 计算熵
-    hx <- entropy_KSG(X, k = k)
-    hy <- entropy_KSG(Y, k = k)
+    hx <- knn_entropy(X, k = k)
+    hy <- knn_entropy(Y, k = k)
   }
   else {
     stop("未知的方法。请使用 'discrete' 或 'knn'")
@@ -88,6 +88,7 @@ modified_chatterjee_mi <- function(X, Y, alpha = 0.5, method = "knn", k = 10, nu
     xi_combined = xi_combined
   ))
 }
+
 
 
 
