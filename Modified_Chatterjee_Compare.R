@@ -138,13 +138,13 @@ modified_chatterjee_D <- function(x, y) {
 }
 
 
-combined_correlation <- function(x, y, alpha = 0.5) {
+combined_correlation <- function(x, y, method = "spearman") {
   n <- length(x)
   if (length(y) != n) {
     stop("x and y must have the same length.")
   }
   
-  # 计算原始的 Chatterjee 相关系数
+  # 計算原始的 Chatterjee 相關系數
   chatterjee_corr <- function(x, y) {
     n <- length(x)
     rank_x <- rank(x, ties.method = "average")
@@ -155,18 +155,34 @@ combined_correlation <- function(x, y, alpha = 0.5) {
     xi_n <- 1 - (3 * S) / (n^2 - 1)
     return(xi_n)
   }
+  
   xi_chatterjee <- chatterjee_corr(x, y)
   
-  # 计算距离相关系数
-  if(!require('energy')) {install.packages('energy'); library(energy)}
-  xi_dcor <- dcor(x, y)
+  # 計算選定的相關系數
+  if (method == "pearson") {
+    xi_corr <- abs(cor(x, y, method = "pearson"))
+  } else if (method == "spearman") {
+    xi_corr <- abs(cor(x, y, method = "spearman"))
+  } else if (method == "dcor") {
+    if (!require('energy')) { install.packages('energy'); library(energy) }
+    xi_corr <- dcor(x, y)
+  } else {
+    stop("Invalid method. Use 'pearson', 'spearman', or 'dcor'.")
+  }
   
-  # 组合相关系数
-  xi_combined <- alpha * xi_chatterjee + (1 - alpha) * xi_dcor
+  # 使用相對權重進行調整
+  total_corr <- xi_chatterjee + xi_corr
+  alpha_adjusted_chatterjee <- xi_chatterjee / total_corr
+  alpha_adjusted_corr <- xi_corr / total_corr
+  
+  # 組合相關系數
+  xi_combined <- alpha_adjusted_chatterjee * xi_chatterjee + alpha_adjusted_corr * xi_corr
   
   return(list(
     xi_chatterjee = xi_chatterjee,
-    xi_dcor = xi_dcor,
+    xi_corr = xi_corr,
+    alpha_adjusted_chatterjee = alpha_adjusted_chatterjee,
+    alpha_adjusted_corr = alpha_adjusted_corr,
     xi_combined = xi_combined
   ))
 }
