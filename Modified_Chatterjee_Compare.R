@@ -63,30 +63,158 @@ data_list <- list(
   list(x = x12, y = y12, title = "Highly Sine Wave Relationship")
 )
 
+#### Modified_Chatterjee ####
+modified_chatterjee_A <- function(X, Y, h = NULL) {
+  n <- length(X)
+  
+  if(length(Y) != n) {
+    stop("X 和 Y 的长度必须相同")
+  }
+  
+  # 步骤 1：计算 Y 的秩
+  R <- rank(Y, ties.method = "average")
+  
+  # 步骤 2：计算权重矩阵 W
+  # 如果未指定 h，使用默认的带宽（Silverman's rule of thumb）
+  if(is.null(h)) {
+    h <- 1.06 * sd(X) * n^(-1/5)
+  }
+  
+  # 创建距离矩阵
+  X_diff <- outer(X, X, "-")
+  
+  # 计算权重矩阵 W，使用高斯核函数
+  W <- exp(- (X_diff^2) / (2 * h^2))
+  
+  # 步骤 3：计算加权秩差的绝对值之和
+  R_diff <- outer(R, R, "-")
+  S <- sum(W * abs(R_diff))
+  
+  # 步骤 4：计算权重的总和
+  W_sum <- sum(W)
+  
+  # 步骤 5：计算改良的 Chatterjee 相关系数
+  D_max <- n - 1
+  xi_global <- 1 - S / (D_max * W_sum)
+  
+  return(xi_global)
+}
+
+
+# 加载包
+library(infotheo)
+library(Rfast)
+
+# install.packages("mpmi")
+library(mpmi)
+
+
+# 改良的 Chatterjee 相关系数函数，结合互信息
+modified_chatterjee_B <- function(X, Y, alpha = 0.5, method = "knn", k = 10, num_bins = NULL) {
+  n <- length(X)
+  
+  if(length(Y) != n) {
+    stop("X 和 Y 的长度必须相同")
+  }
+  
+  # 检查 alpha 是否在 [0, 1] 范围内
+  if(alpha < 0 || alpha > 1) {
+    stop("参数 alpha 必须在 [0, 1] 范围内")
+  }
+  
+  # 步骤 1：计算原始的 Chatterjee 相关系数
+  chatterjee_corr <- function(X, Y) {
+    n <- length(X)
+    order_X <- order(X)
+    Y_ordered <- Y[order_X]
+    R <- rank(Y_ordered, ties.method = "average")
+    S <- sum(abs(diff(R)))
+    xi <- 1 - (3 * S) / (n^2 - 1)
+    return(xi)
+  }
+  
+  xi <- chatterjee_corr(X, Y)
+  
+  # 步骤 2：计算互信息
+  if(method == "discrete") {
+    # 如果未指定 num_bins，使用 Sturges' 公式
+    if(is.null(num_bins)) {
+      num_bins <- ceiling(1 + log2(n))
+    }
+    
+    # 离散化数据（指定包名）
+    X_discrete <- infotheo::discretize(X, disc = "equalfreq", nbins = num_bins)
+    Y_discrete <- infotheo::discretize(Y, disc = "equalfreq", nbins = num_bins)
+    
+    # 计算互信息
+    mi <- infotheo::mutinformation(X_discrete, Y_discrete)
+    
+    # 计算熵
+    hx <- infotheo::entropy(X_discrete)
+    hy <- infotheo::entropy(Y_discrete)
+  }
+  else if(method == "knn") {
+    # 使用 mpmi 包的基于 k-NN 的方法
+    # 计算互信息
+    mi <- knn_mi(X, Y, k = k)
+    
+    # 计算熵
+    hx <- knn_entropy(X, k = k)
+    hy <- knn_entropy(Y, k = k)
+  }
+  else {
+    stop("未知的方法。请使用 'discrete' 或 'knn'")
+  }
+  
+  # 计算标准化互信息
+  nmi <- 2 * mi / (hx + hy)
+  
+  # 处理特殊情况
+  if(is.na(nmi) || is.infinite(nmi)) {
+    nmi <- 0
+  }
+  
+  # 将 NMI 限制在 [0, 1] 范围内
+  nmi <- max(0, min(1, nmi))
+  
+  # 步骤 3：计算结合的相关系数
+  xi_combined <- alpha * xi + (1 - alpha) * nmi
+  
+  # 返回结果
+  return(list(
+    xi_chatterjee = xi,
+    mutual_information = mi,
+    normalized_mutual_information = nmi,
+    xi_combined = xi_combined
+  ))
+}
+
+
+
 
 
 #### Calculate correlations ####
 # Define a function to calculate and display Pearson, Spearman, and Chatterjee correlations
 calculate_correlations <- function(x, y) {
-  pearson_corr <- cor(x, y, method = "pearson")
-  spearman_corr <- cor(x, y, method = "spearman")
+  chatterjee_corr_A <- modified_chatterjee_A(x, y)
+  chatterjee_corr_B <- modified_chatterjee_B(x, y,method = "discrete")$xi_combined
   
   chatterjee_corr <- xicor(x, y)
   
-  return(c(pearson_corr, spearman_corr, chatterjee_corr))
+  return(c(chatterjee_corr_A, chatterjee_corr_B, chatterjee_corr))
 }
 
 #### Visualization ####
 # Define the plotting function
 plot_data <- function(x, y, title, correlations) {
-  pearson_corr <- round(correlations[1], 2)
-  spearman_corr <- round(correlations[2], 2)
+  chatterjee_corr_A <- round(correlations[1], 2)
+  chatterjee_corr_B <- round(correlations[2], 2)
   chatterjee_corr <- round(correlations[3], 2)
   
   ggplot(data = data.frame(x = x, y = y), aes(x = x, y = y)) +
     geom_point(color = 'blue', size = 2) +
-    ggtitle(paste0(title, "\nPearson: ", pearson_corr,
-                   " | Spearman: ", spearman_corr,
+    ggtitle(paste0(title, "\nChatterjee_A: ", chatterjee_corr_A,
+                   " | Chatterjee_B: ", chatterjee_corr_B,
                    " | Chatterjee: ", chatterjee_corr)) +
     theme_minimal() +
     
