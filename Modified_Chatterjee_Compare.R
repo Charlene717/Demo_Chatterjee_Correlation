@@ -190,6 +190,83 @@ modified_chatterjee_B <- function(X, Y, alpha = 0.5, method = "knn", k = 10, num
 }
 
 
+kernel_chatterjee <- function(x, y, kernel = "gaussian", sigma = NULL, degree = 3, coef0 = 1) {
+  # 检查输入
+  if (length(x) != length(y)) {
+    stop("x and y must have the same length.")
+  }
+  n <- length(x)
+  
+  # 定义核函数
+  kernel_function <- function(u, v) {
+    if (kernel == "gaussian") {
+      # 如果 sigma 未指定，使用数据的中位数距离
+      if (is.null(sigma)) {
+        sigma <- median(dist(c(u, v)))
+      }
+      return(exp(- (outer(u, v, "-")^2) / (2 * sigma^2)))
+    } else if (kernel == "linear") {
+      return(outer(u, v, "*"))
+    } else if (kernel == "polynomial") {
+      return((outer(u, v, "*") + coef0)^degree)
+    } else {
+      stop("Unsupported kernel type.")
+    }
+  }
+  
+  # 计算核矩阵
+  KX <- kernel_function(x, x)
+  KY <- kernel_function(y, y)
+  
+  # 计算中心化矩阵 H
+  H <- diag(n) - matrix(1, n, n) / n
+  
+  # 中心化核矩阵
+  KX_centered <- H %*% KX %*% H
+  KY_centered <- H %*% KY %*% H
+  
+  # 计算迹
+  numerator <- sum(KX_centered * KY_centered)  # 等价于 trace(A %*% B)
+  denominator <- sqrt(sum(KX_centered * KX_centered) * sum(KY_centered * KY_centered))
+  
+  # 计算改良的 Chatterjee 相关系数
+  xi_kernel <- numerator / denominator
+  
+  return(xi_kernel)
+}
+
+global_chatterjee <- function(x, y, gamma = NULL) {
+  n <- length(x)
+  if (length(y) != n) {
+    stop("x and y must have the same length.")
+  }
+  
+  # 计算秩
+  rank_x <- rank(x, ties.method = "average")
+  rank_y <- rank(y, ties.method = "average")
+  
+  # 计算距离矩阵
+  dist_x <- as.matrix(dist(x, method = "euclidean"))
+  dist_y <- as.matrix(dist(y, method = "euclidean"))
+  
+  # 计算权重矩阵
+  if (is.null(gamma)) {
+    gamma <- 1 / median(dist_x[upper.tri(dist_x)])
+  }
+  w <- exp(-gamma * dist_x)
+  
+  # 计算秩差的绝对值矩阵
+  rank_diff <- abs(outer(rank_y, rank_y, "-"))
+  
+  # 计算分子和分母
+  numerator <- sum(w * rank_diff)
+  denominator <- sum(w) * (n - 1)
+  
+  # 计算改良的 Chatterjee 相关系数
+  xi_global <- 1 - numerator / denominator
+  
+  return(xi_global)
+}
 
 
 
@@ -197,7 +274,9 @@ modified_chatterjee_B <- function(X, Y, alpha = 0.5, method = "knn", k = 10, num
 # Define a function to calculate and display Pearson, Spearman, and Chatterjee correlations
 calculate_correlations <- function(x, y) {
   chatterjee_corr_A <- modified_chatterjee_A(x, y)
-  chatterjee_corr_B <- modified_chatterjee_B(x, y,method = "discrete")$xi_combined
+  # chatterjee_corr_B <- modified_chatterjee_B(x, y,method = "discrete")$xi_combined
+  # chatterjee_corr_B <- kernel_chatterjee(x, y, kernel = "gaussian")
+  chatterjee_corr_B <-  global_chatterjee(x, y)
   
   chatterjee_corr <- xicor(x, y)
   
@@ -220,7 +299,7 @@ plot_data <- function(x, y, title, correlations) {
     
     # Set title, axis labels, and axis tick size
     theme(
-      plot.title = element_text(size = 11),            # Title font size
+      plot.title = element_text(size = 9),            # Title font size
       axis.title.x = element_text(size = 14),          # X-axis title size
       axis.title.y = element_text(size = 14),          # Y-axis title size
       axis.text.x = element_text(size = 12),           # X-axis tick text size
